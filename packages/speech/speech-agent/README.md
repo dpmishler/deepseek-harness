@@ -39,12 +39,6 @@ The main barrel (`@deepseek-ai/dsh-speech-agent`) exports only the Cordis- and s
 
 The package's `./invariant` companion checks that `speech-agent/turn-transcript.turnIndex` strictly increases within one session, matching `SttTurnEvent`'s documented turn-index contract.
 
-## Known Limitations and Deferred Work
-
-- **No model-facing tool or automatic session wiring** — this package supplies the orchestration engine and durable-history helpers; a host composes them with a live audio transport (microphone capture, speaker playback) and a `ctx.llm` call config. No example composition is included in this change.
-- **`projectConversationHistory` covers only voice turns** — it folds `speech-agent/*` events alone. A session that also carries ordinary `user/message`/`assistant/message` turns (text chat, tool calls) needs its own merge; this package does not interleave the two histories.
-- **No reconnect or retry policy** — inherited from `@deepseek-ai/dsh-speech`: a transport failure ends the session and reaches `onError`; reconnection is a caller concern.
-
 ## Model Experience
 
 ### Projected voice-turn history
@@ -60,3 +54,9 @@ Each reconciled voice turn adds one data-dependent user message and (once reconc
 #### KV Cache effect
 
 Append-only: a reconciled turn's projected messages are written once and never revised, so earlier turns stay a stable, reusable prefix as later turns append. `heardText` is fixed at reconciliation time — a barge-in shortens what is recorded, not what a previously reconciled and already-sent turn contains.
+
+## Known Limitations and Deferred Work
+
+- **No model-facing tool or automatic session wiring** — this package supplies the orchestration engine and durable-history helpers; a host composes them with a live audio transport (microphone capture, speaker playback) and a `ctx.llm` call config. `examples/speech-agent-demo` shows the production plugin composition, and its README shows the application code that drives the loop against fake providers deterministically.
+- **`projectConversationHistory` covers only voice turns** — it folds `speech-agent/*` events alone. A session that also carries ordinary `user/message`/`assistant/message` turns (text chat, tool calls) needs its own merge; this package does not interleave the two histories.
+- **No reconnect or retry policy** — inherited from `@deepseek-ai/dsh-speech`: a transport failure ends the session and reaches `onError`; reconnection is a caller concern.

@@ -73,6 +73,7 @@ export class AsyncEventQueue<T> implements AsyncIterable<T> {
         if (this.buffered.length > 0) {
           return Promise.resolve({ value: this.buffered.shift() as T, done: false })
         }
+        // oxlint-disable-next-line typescript/prefer-promise-reject-errors -- fail() rejects with the caller's value.
         if (this.failure !== undefined) return Promise.reject(this.failure.error)
         if (this.ended) return Promise.resolve({ value: undefined, done: true })
         if (this.waiting !== undefined) {

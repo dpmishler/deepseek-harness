@@ -39,12 +39,6 @@
 
 本包的 `./invariant` companion 检查 `speech-agent/turn-transcript.turnIndex` 在一个会话内严格递增，与 `SttTurnEvent` 记录的轮次索引约定一致。
 
-## Known Limitations and Deferred Work
-
-- **没有面向模型的工具，也没有自动的会话接线** —— 本包只提供编排引擎与持久历史辅助函数；宿主负责把它们与真实的音频传输（麦克风采集、扬声器播放）以及一个 `ctx.llm` 调用配置组合起来。本次改动未包含示例组合。
-- **`projectConversationHistory` 只覆盖语音轮次** —— 它只折叠 `speech-agent/*` 事件。一个同时携带普通 `user/message`/`assistant/message` 轮次（文本聊天、工具调用）的会话需要自己做合并；本包不会交错这两种历史。
-- **没有重连或重试策略** —— 继承自 `@deepseek-ai/dsh-speech`：一次传输失败会结束会话并到达 `onError`；重连是调用方的责任。
-
 ## Model Experience
 
 ### 投影出的语音轮次历史
@@ -60,3 +54,9 @@
 #### KV Cache effect
 
 仅追加：一个已对账轮次投影出的消息只写入一次，此后不再修改，因此随着后续轮次不断追加，更早的轮次始终是一个稳定、可复用的前缀。`heardText` 在对账那一刻就已固定——打断改变的是接下来要记录的内容，而不会改变一个已经对账并已发送过的历史轮次。
+
+## Known Limitations and Deferred Work
+
+- **没有面向模型的工具，也没有自动的会话接线** —— 本包只提供编排引擎与持久历史辅助函数；宿主负责把它们与真实的音频传输（麦克风采集、扬声器播放）以及一个 `ctx.llm` 调用配置组合起来。`examples/speech-agent-demo` 展示了生产插件组合，其 README 展示了驱动该循环、确定性地针对伪造提供方运行的应用代码。
+- **`projectConversationHistory` 只覆盖语音轮次** —— 它只折叠 `speech-agent/*` 事件。一个同时携带普通 `user/message`/`assistant/message` 轮次（文本聊天、工具调用）的会话需要自己做合并；本包不会交错这两种历史。
+- **没有重连或重试策略** —— 继承自 `@deepseek-ai/dsh-speech`：一次传输失败会结束会话并到达 `onError`；重连是调用方的责任。
