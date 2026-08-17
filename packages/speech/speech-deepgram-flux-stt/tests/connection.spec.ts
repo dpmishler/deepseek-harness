@@ -155,6 +155,48 @@ describe('FluxSttConnection connect()', () => {
     socket.fireError('handshake refused')
     await expect(opened).rejects.toThrow('handshake refused')
   })
+
+  it('rejects with a default message when the socket errors before opening with no message', async () => {
+    const { connection, socket } = makeConnection()
+    const opened = connection.connect()
+    socket.fireError()
+    await expect(opened).rejects.toThrow('Deepgram Flux STT WebSocket handshake failed')
+  })
+
+  it('rejects immediately without opening a socket when options.signal is already aborted', async () => {
+    const controller = new AbortController()
+    controller.abort()
+    let socketCreated = false
+    const createWebSocket: WebSocketFactory = () => { socketCreated = true; return new FakeSocket() }
+    const connection = new FluxSttConnection({
+      apiKey: 'test-key',
+      baseURL: DEFAULT_BASE_URL,
+      model: 'flux-general-en',
+      options: { provider: 'deepgram-flux', signal: controller.signal },
+      createWebSocket,
+    })
+    await expect(connection.connect()).rejects.toThrow(expect.objectContaining({ code: 'CONNECT_ABORTED' }))
+    expect(socketCreated).toBe(false)
+  })
+
+  it('rejects and closes the socket when options.signal aborts before the handshake completes', async () => {
+    const controller = new AbortController()
+    const { connection, socket } = makeConnection({ options: { provider: 'deepgram-flux', signal: controller.signal } })
+    const opened = connection.connect()
+    controller.abort()
+    await expect(opened).rejects.toThrow(expect.objectContaining({ code: 'CONNECT_ABORTED' }))
+    expect(socket.closedWith).toBeDefined()
+  })
+
+  it('ignores a signal abort that fires after the handshake has already completed', async () => {
+    const controller = new AbortController()
+    const { connection, socket } = makeConnection({ options: { provider: 'deepgram-flux', signal: controller.signal } })
+    const opened = connection.connect()
+    socket.fireOpen()
+    await expect(opened).resolves.toBeUndefined()
+    expect(() => controller.abort()).not.toThrow()
+    expect(socket.closedWith).toBeUndefined()
+  })
 })
 
 // ── message mapping ──────────────────────────────────────────────────────────────
@@ -425,6 +467,48 @@ describe('FluxSttConnection unexpected transport events', () => {
     const events: SttEvent[] = []
     for await (const event of connection) events.push(event)
     expect(events).toEqual([{ type: 'closed', code: 1000, reason: 'normal' }])
+  })
+
+  it('surfaces a post-open transport error with a default message when none is given', async () => {
+    const { connection, socket } = makeConnection()
+    void connection.connect()
+    socket.fireOpen()
+    socket.fireError()
+    const [errorEvent] = await collect(connection, 1)
+    expect(errorEvent).toEqual({ type: 'error', code: 'TRANSPORT_ERROR', message: 'WebSocket error', fatal: false })
+  })
+
+  it('ignores a second close event once the connection has already finished', async () => {
+    const { connection, socket } = makeConnection()
+    void connection.connect()
+    socket.fireOpen()
+    socket.fireClose(1000, 'first')
+    socket.fireClose(1006, 'second')
+    const events = await collect(connection, 1)
+    expect(events).toEqual([{ type: 'closed', code: 1000, reason: 'first' }])
+  })
+
+  it('drops a Configure control message once the connection has closed', async () => {
+    const { connection, socket } = makeConnection()
+    void connection.connect()
+    socket.fireOpen()
+    socket.fireClose(1000, 'normal')
+    await collect(connection, 1)
+    socket.sent = []
+    connection.configure({ keyterms: ['x'] })
+    expect(socket.sent).toEqual([])
+  })
+
+  it('waits for the next enqueued event when the iterator has drained the queue', async () => {
+    const { connection, socket } = makeConnection()
+    void connection.connect()
+    socket.fireOpen()
+    const iterator = connection[Symbol.asyncIterator]()
+    const pending = iterator.next()
+    await Promise.resolve()
+    socket.fireMessage(JSON.stringify({ type: 'Connected', request_id: 'req-3' }))
+    const result = await pending
+    expect(result).toEqual({ done: false, value: { type: 'connected', requestId: 'req-3' } })
   })
 })
 

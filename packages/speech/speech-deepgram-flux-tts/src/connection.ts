@@ -10,7 +10,7 @@
  */
 
 import type { TtsConfigureRequest, TtsEvent, TtsOpenOptions } from '@deepseek-ai/dsh-speech'
-import { SpeechRequestId, SpeechTurnId } from '@deepseek-ai/dsh-speech'
+import { SpeechError, SpeechRequestId, SpeechTurnId } from '@deepseek-ai/dsh-speech'
 import type { FluxTtsClientControl, FluxTtsServerMessage } from './types.ts'
 
 /** Minimal WHATWG-compatible WebSocket surface the connection depends on. */
@@ -50,6 +50,8 @@ export interface FluxTtsConnectionOptions {
  */
 async function defaultWebSocketFactory(): Promise<WebSocketFactory> {
   const { WebSocket } = await import('undici')
+  /* v8 ignore next -- exercising this arrow function opens a real network socket;
+  the resolved factory itself is covered without invoking it. */
   return (url, headers) => new WebSocket(url, { headers })
 }
 
@@ -99,17 +101,28 @@ export class FluxTtsConnection {
 
   /**
    * Open the WebSocket. Resolves once the handshake completes (`open`);
-   * rejects if the handshake fails before then.
+   * rejects if the handshake fails before then, or if `options.signal` is
+   * already aborted or fires before the handshake completes.
    * @returns settles once the transport is ready to send text.
    */
   async connect(): Promise<void> {
+    const { signal } = this.opts.options
+    if (signal?.aborted === true) {
+      throw new SpeechError('/v2/speak connect() aborted before the WebSocket handshake started', 'CONNECT_ABORTED')
+    }
     const url = buildUrl(this.opts)
     const ws = this.opts.createWebSocket(url, { Authorization: `Token ${this.opts.apiKey}` })
     this.ws = ws
     return new Promise<void>((resolve, reject) => {
+      const onAbort = (): void => {
+        ws.close()
+        reject(new SpeechError('/v2/speak connect() aborted before the WebSocket handshake completed', 'CONNECT_ABORTED'))
+      }
+      signal?.addEventListener('abort', onAbort, { once: true })
       let opened = false
       ws.addEventListener('open', () => {
         opened = true
+        signal?.removeEventListener('abort', onAbort)
         resolve()
       })
       ws.addEventListener('message', (event) => {
@@ -120,6 +133,7 @@ export class FluxTtsConnection {
       })
       ws.addEventListener('error', (event) => {
         if (!opened) {
+          signal?.removeEventListener('abort', onAbort)
           reject(new Error(event.message ?? 'Deepgram Flux TTS WebSocket handshake failed'))
           return
         }

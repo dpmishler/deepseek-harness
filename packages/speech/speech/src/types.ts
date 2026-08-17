@@ -374,5 +374,7 @@ export interface TtsProvider {
  * - `SPEECH_DUPLICATE_PROVIDER` — id already registered in that capability kind (STT or TTS).
  * - `SPEECH_PROVIDER_NOT_REGISTERED` — `options.provider` names an id with no registered provider.
  * - `SESSION_CLOSED` — a session method was called after `close()` or after observing `closed`.
+ * - `CONNECT_ABORTED` — `options.signal` was already aborted, or fired before the provider's transport
+ *   finished connecting; providers that honor {@link SttOpenOptions.signal}/{@link TtsOpenOptions.signal} use this code.
  */
 export class SpeechError extends HarnessError {}

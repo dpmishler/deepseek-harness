@@ -147,6 +147,41 @@ describe('FluxTtsConnection connect()', () => {
     socket.fireError('handshake refused')
     await expect(opened).rejects.toThrow('handshake refused')
   })
+
+  it('rejects immediately without opening a socket when options.signal is already aborted', async () => {
+    const controller = new AbortController()
+    controller.abort()
+    let socketCreated = false
+    const createWebSocket: WebSocketFactory = () => { socketCreated = true; return new FakeSocket() }
+    const connection = new FluxTtsConnection({
+      apiKey: 'test-key',
+      baseURL: DEFAULT_BASE_URL,
+      model: 'flux-haley-en',
+      options: { provider: 'deepgram-flux', signal: controller.signal },
+      createWebSocket,
+    })
+    await expect(connection.connect()).rejects.toThrow(expect.objectContaining({ code: 'CONNECT_ABORTED' }))
+    expect(socketCreated).toBe(false)
+  })
+
+  it('rejects and closes the socket when options.signal aborts before the handshake completes', async () => {
+    const controller = new AbortController()
+    const { connection, socket } = makeConnection({ options: { provider: 'deepgram-flux', signal: controller.signal } })
+    const opened = connection.connect()
+    controller.abort()
+    await expect(opened).rejects.toThrow(expect.objectContaining({ code: 'CONNECT_ABORTED' }))
+    expect(socket.closedWith).toBeDefined()
+  })
+
+  it('ignores a signal abort that fires after the handshake has already completed', async () => {
+    const controller = new AbortController()
+    const { connection, socket } = makeConnection({ options: { provider: 'deepgram-flux', signal: controller.signal } })
+    const opened = connection.connect()
+    socket.fireOpen()
+    await expect(opened).resolves.toBeUndefined()
+    expect(() => controller.abort()).not.toThrow()
+    expect(socket.closedWith).toBeUndefined()
+  })
 })
 
 // ── message mapping ──────────────────────────────────────────────────────────────
