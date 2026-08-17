@@ -1,6 +1,14 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import type { WebSocketFactory, WebSocketLike } from '../src/connection.ts'
 import { FluxSttProvider } from '../src/provider.ts'
+
+const fakeDefaultFactory = vi.fn((): WebSocketLike => new ImmediatelyOpenSocket())
+const resolveDefaultWebSocketFactoryMock = vi.fn(async (): Promise<WebSocketFactory> => fakeDefaultFactory)
+
+vi.mock('../src/connection.ts', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../src/connection.ts')>()
+  return { ...actual, resolveDefaultWebSocketFactory: () => resolveDefaultWebSocketFactoryMock() }
+})
 
 /** A `WebSocketLike` double that opens immediately when constructed. */
 class ImmediatelyOpenSocket implements WebSocketLike {
@@ -68,5 +76,13 @@ describe('FluxSttProvider', () => {
     expect(socket.sent).toHaveLength(2)
     expect(session.events).toBeDefined()
     void session.close()
+  })
+
+  it('resolves and memoizes the default WebSocket factory when createWebSocket is omitted', async () => {
+    resolveDefaultWebSocketFactoryMock.mockClear()
+    const provider = new FluxSttProvider({ apiKey: 'k', baseURL: 'wss://api.deepgram.com', model: 'flux-general-en' })
+    await provider.connect({ provider: 'deepgram-flux' })
+    await provider.connect({ provider: 'deepgram-flux' })
+    expect(resolveDefaultWebSocketFactoryMock).toHaveBeenCalledTimes(1)
   })
 })
