@@ -148,6 +148,13 @@ describe('FluxTtsConnection connect()', () => {
     await expect(opened).rejects.toThrow('handshake refused')
   })
 
+  it('rejects with a default message when the socket errors before opening with no message', async () => {
+    const { connection, socket } = makeConnection()
+    const opened = connection.connect()
+    socket.fireError()
+    await expect(opened).rejects.toThrow('Deepgram Flux TTS WebSocket handshake failed')
+  })
+
   it('rejects immediately without opening a socket when options.signal is already aborted', async () => {
     const controller = new AbortController()
     controller.abort()
@@ -179,7 +186,7 @@ describe('FluxTtsConnection connect()', () => {
     const opened = connection.connect()
     socket.fireOpen()
     await expect(opened).resolves.toBeUndefined()
-    expect(() => controller.abort()).not.toThrow()
+    expect(() => { controller.abort() }).not.toThrow()
     expect(socket.closedWith).toBeUndefined()
   })
 })
@@ -222,6 +229,16 @@ describe('FluxTtsConnection message mapping', () => {
     void connection.connect()
     socket.fireOpen()
     socket.fireMessage(new Uint8Array([9]))
+    socket.fireMessage(JSON.stringify({ type: 'SpeechStarted', speech_id: 'turn-1' }))
+    const [event] = await collect(connection, 1)
+    expect(event).toEqual({ type: 'turn-started', turnId: 'turn-1' })
+  })
+
+  it('ignores a non-binary, non-string message frame', async () => {
+    const { connection, socket } = makeConnection()
+    void connection.connect()
+    socket.fireOpen()
+    socket.fireMessage(12345)
     socket.fireMessage(JSON.stringify({ type: 'SpeechStarted', speech_id: 'turn-1' }))
     const [event] = await collect(connection, 1)
     expect(event).toEqual({ type: 'turn-started', turnId: 'turn-1' })
@@ -343,6 +360,24 @@ describe('FluxTtsConnection message mapping', () => {
       failureField: 'speed',
       failureValue: 3.5,
     })
+  })
+
+  it('maps ConfigureSuccess to an ok configure-ack with no appliedSpeed when the reply omits it', async () => {
+    const { connection, socket } = makeConnection()
+    void connection.connect()
+    socket.fireOpen()
+    socket.fireMessage(JSON.stringify({ type: 'ConfigureSuccess', applied: {} }))
+    const [event] = await collect(connection, 1)
+    expect(event).toEqual({ type: 'configure-ack', ok: true })
+  })
+
+  it('maps ConfigureFailure to a failed configure-ack with no field/value when the reply omits them', async () => {
+    const { connection, socket } = makeConnection()
+    void connection.connect()
+    socket.fireOpen()
+    socket.fireMessage(JSON.stringify({ type: 'ConfigureFailure', code: 'SPEED_OUT_OF_RANGE', description: 'bad speed' }))
+    const [event] = await collect(connection, 1)
+    expect(event).toEqual({ type: 'configure-ack', ok: false, failureCode: 'SPEED_OUT_OF_RANGE', failureMessage: 'bad speed' })
   })
 
   it('maps Warning to a non-fatal warning event', async () => {
@@ -520,6 +555,37 @@ describe('FluxTtsConnection unexpected transport events', () => {
     const events: TtsEvent[] = []
     for await (const event of connection) events.push(event)
     expect(events).toEqual([{ type: 'closed', code: 1000, reason: 'normal' }])
+  })
+
+  it('surfaces a post-open transport error with a default message when none is given', async () => {
+    const { connection, socket } = makeConnection()
+    void connection.connect()
+    socket.fireOpen()
+    socket.fireError()
+    const [errorEvent] = await collect(connection, 1)
+    expect(errorEvent).toEqual({ type: 'error', code: 'TRANSPORT_ERROR', message: 'WebSocket error' })
+  })
+
+  it('ignores a second close event once the connection has already finished', async () => {
+    const { connection, socket } = makeConnection()
+    void connection.connect()
+    socket.fireOpen()
+    socket.fireClose(1000, 'first')
+    socket.fireClose(1006, 'second')
+    const events = await collect(connection, 1)
+    expect(events).toEqual([{ type: 'closed', code: 1000, reason: 'first' }])
+  })
+
+  it('waits for the next enqueued event when the iterator has drained the queue', async () => {
+    const { connection, socket } = makeConnection()
+    void connection.connect()
+    socket.fireOpen()
+    const iterator = connection[Symbol.asyncIterator]()
+    const pending = iterator.next()
+    await Promise.resolve()
+    socket.fireMessage(JSON.stringify({ type: 'Connected', request_id: 'req-3', model_name: 'flux-alexis-en' }))
+    const result = await pending
+    expect(result).toEqual({ done: false, value: { type: 'connected', requestId: 'req-3', modelName: 'flux-alexis-en' } })
   })
 })
 
