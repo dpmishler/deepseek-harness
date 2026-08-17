@@ -1,0 +1,7 @@
+{
+  "name": "speech-agent-demo-example",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "description": "Runnable demo: a full-duplex voice conversation over ctx.speech (Deepgram Flux) and ctx.llm (DeepSeek), orchestrated by @deepseek-ai/dsh-speech-agent"
+}
