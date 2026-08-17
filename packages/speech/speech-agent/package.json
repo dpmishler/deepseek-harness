@@ -1,0 +1,57 @@
+{
+  "name": "@deepseek-ai/dsh-speech-agent",
+  "description": "Durable speech-agent orchestration Consumer for ctx.speech + ctx.llm: streams LLM output into TTS, finalizes STT turns, reconciles barge-in via text_spoken/text_remaining, and projects generated-vs-heard durable history",
+  "version": "0.1.0-rc.7",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/speech/speech-agent"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./invariant": {
+      "types": "./lib/types/invariant.d.ts",
+      "default": "./lib/invariant.js"
+    },
+    "./session-log": {
+      "types": "./lib/types/session-log.d.ts",
+      "default": "./lib/types/session-log.js"
+    },
+    "./llm-responder": {
+      "types": "./lib/types/llm-responder.d.ts",
+      "default": "./lib/types/llm-responder.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib/index.js",
+    "lib/invariant.js",
+    "lib/types/**/*.js",
+    "lib/types/**/*.d.ts"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "@deepseek-ai/dsh-invariants": "workspace:^",
+    "@deepseek-ai/dsh-llm": "workspace:^",
+    "@deepseek-ai/dsh-session": "workspace:^",
+    "@deepseek-ai/dsh-speech": "workspace:^",
+    "@deepseek-ai/cordis": "workspace:^"
+  },
+  "devDependencies": {
+    "@deepseek-ai/dsh-invariants": "workspace:^",
+    "@deepseek-ai/dsh-llm": "workspace:^",
+    "@deepseek-ai/dsh-session": "workspace:^",
+    "@deepseek-ai/dsh-speech": "workspace:^",
+    "@deepseek-ai/cordis": "workspace:^"
+  }
+}

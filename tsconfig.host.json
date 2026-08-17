@@ -234,6 +234,7 @@
     { "path": "./packages/speech/speech" },
     { "path": "./packages/speech/speech-deepgram-flux-stt" },
     { "path": "./packages/speech/speech-deepgram-flux-tts" },
+    { "path": "./packages/speech/speech-agent" },
     { "path": "./packages/spill/spill" },
     { "path": "./packages/spill/spill-local" },
     { "path": "./packages/spill/spill-policy" },
