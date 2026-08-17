@@ -488,6 +488,15 @@ const SERVICE_ROLES: ServiceRole[] = [
     note: 'Search and fetch providers register into one ctx.web seam; tool-web owns the stable model-facing names.',
   },
   {
+    key: 'speech',
+    pkg: 'speech',
+    title: 'Speech (STT/TTS) provider registry',
+    mode: 'seam',
+    implementations: ['speech-deepgram-flux-stt', 'speech-deepgram-flux-tts'],
+    consumers: ['speech-agent'],
+    note: 'STT/TTS providers register into one ctx.speech seam by explicit id (no auto-selection); speech-agent\'s TurnController is the sole Consumer, correlating both directions into one barge-in-aware conversation.',
+  },
+  {
     key: 'spillStore',
     pkg: 'spill',
     title: 'Spill storage seam',

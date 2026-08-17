@@ -1,5 +1,7 @@
 # @deepseek-ai/dsh-speech-deepgram-flux-stt
 
+English | [中文](README.zh.md)
+
 Registers a Deepgram Flux-backed `SttProvider` on `ctx.speech` (owned by `@deepseek-ai/dsh-speech`). Opens one WebSocket per session against `wss://api.deepgram.com/v2/listen` — **never** `/v1/listen` (Nova/legacy) or any Aura endpoint; Flux requires `/v2/listen` per [Deepgram's docs](https://developers.deepgram.com/docs/flux/quickstart).
 
 ## Registration
@@ -34,7 +36,7 @@ Query parameters sent on the `/v2/listen` URL: `model` (from `options.model`, de
 
 ## Model Experience
 
-None, as the Deepgram Flux STT adapter only opens sessions; no model-facing consumer is registered yet.
+None, as the Deepgram Flux STT adapter only opens sessions; the model-facing surface belongs to whatever consumer turns a transcript into a `user/message`.
 
 #### KV Cache effect
 
@@ -45,4 +47,3 @@ Not applicable: this package makes no model request of its own.
 - **No local model/language-hint validation** — sending `language_hint` to `flux-general-en`, or an out-of-range threshold, is rejected by the server (`ConfigureFailure` or a connection-level error), not caught locally before the request is sent.
 - **`profanity_filter`, `numerals`, `redact`, `mip_opt_out`, `tag` query parameters are not exposed** — the provider-neutral `SttOpenOptions` has no fields for them; a future revision would need either provider-specific passthrough or seam-level additions.
 - **No reconnect on an unexpected close** — an abnormal WebSocket close (any code besides a caller-initiated `close()`) surfaces as a `closed` event like any other; the caller must reconnect by opening a new session.
-- **e2e coverage against the real Deepgram endpoint is not included in this change** — unit tests use an injected `WebSocketFactory` double; a real-API smoke test is deferred to when this package has a model-facing consumer to exercise end to end.

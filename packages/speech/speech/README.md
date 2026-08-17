@@ -1,5 +1,7 @@
 # @deepseek-ai/dsh-speech
 
+English | [中文](README.zh.md)
+
 The **`SpeechRuntime`** (`ctx.speech`) defines WHAT streaming speech capability the harness has — open a speech-to-text session, open a text-to-speech session — over multiple providers, without binding the model-visible or product-visible surface to one vendor's wire protocol.
 
 This package owns the Service Definition role of the speech capability. Unlike `ctx.web`, provider selection is never ambiguous or auto-resolved: every session-opening request names its provider id explicitly, so `openStt()`/`openTts()` either dispatch to that exact registered adapter or fail loud.
@@ -10,7 +12,7 @@ This package owns the Service Definition role of the speech capability. Unlike `
 | `@deepseek-ai/dsh-speech-deepgram-flux-stt` | STT provider: Deepgram Flux over `wss://api.deepgram.com/v2/listen` |
 | `@deepseek-ai/dsh-speech-deepgram-flux-tts` | TTS provider: Deepgram Flux over `wss://api.deepgram.com/v2/speak` |
 
-STT and TTS share no request schema and no business logic, but they are deliberately one seam: `ctx.speech` is a single provider-registry owner with one duplicate-id policy and one error taxonomy, mirroring the STT/TTS split of `ctx.voice` while keeping registration explicit rather than availability-ranked.
+STT and TTS share no request schema and no business logic, but they are deliberately one seam: `ctx.speech` is a single provider-registry owner with one duplicate-id policy and one error taxonomy, mirroring `ctx.web`'s single-service-multiple-registry shape while keeping registration explicit rather than availability-ranked.
 
 ## Service API (`ctx.speech`)
 
@@ -31,7 +33,7 @@ An `SttSession`/`TtsSession` is an open, provider-neutral streaming session: `ev
 
 ## Model Experience
 
-None, as the STT/TTS provider registry only opens sessions and forwards audio/text; no model-facing consumer is registered yet.
+None, as the STT/TTS provider registry only opens sessions and forwards audio/text; a consumer such as `dsh-speech-agent` owns any model-facing surface.
 
 #### KV Cache effect
 
@@ -39,6 +41,6 @@ Not applicable: this package makes no model request of its own.
 
 ## Known Limitations and Deferred Work
 
-- **No model-facing consumer yet** — no tool or voice-agent Consumer renders speech sessions into a model request; `openStt()`/`openTts()` are usable only from plugin code until one is added.
+- **Model-facing surface lives in the consumer** — `@deepseek-ai/dsh-speech-agent` renders a completed transcript into an LLM request and streams the response into TTS, but this package itself never inspects the text; `openStt()`/`openTts()` stay usable directly from any other plugin code too.
 - **No provider-availability query** — unlike `ctx.web`, there is no `available()` check or auto-selection; a caller must know which provider id is registered, and a missing id fails only at `openStt()`/`openTts()` time, not at registration time.
 - **No reconnect or retry policy** — a transport failure ends the session (`closed` or a rejected `events` iterable); reconnection, backoff, and mid-session resume are provider- or consumer-owned, not part of this seam.

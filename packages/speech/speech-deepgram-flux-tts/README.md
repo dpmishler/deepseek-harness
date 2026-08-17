@@ -1,5 +1,7 @@
 # @deepseek-ai/dsh-speech-deepgram-flux-tts
 
+English | [中文](README.zh.md)
+
 Registers a Deepgram Flux-backed `TtsProvider` on `ctx.speech` (owned by `@deepseek-ai/dsh-speech`). Opens one WebSocket per session against `wss://api.deepgram.com/v2/speak` — **never** `/v1/speak` (Aura); an Aura model string is rejected on `/v2/speak` per [Deepgram's docs](https://developers.deepgram.com/reference/text-to-speech-api/speak-flux).
 
 ## Registration
@@ -36,7 +38,7 @@ Binary `Audio` frames on the wire carry no turn identifier, so `FluxTtsConnectio
 
 ## Model Experience
 
-None, as the Deepgram Flux TTS adapter only opens sessions; no model-facing consumer is registered yet.
+None, as the Deepgram Flux TTS adapter only opens sessions; it renders whatever text a caller streams in, without adding prompt or schema of its own.
 
 #### KV Cache effect
 
@@ -47,4 +49,3 @@ Not applicable: this package makes no model request of its own.
 - **`expressivity` cannot be changed mid-session** — per Deepgram, it is fixed for the connection (beta; not settable via `Configure`); a caller who wants a different value must open a new session.
 - **`mip_opt_out` and `tag` query parameters are not exposed** — the provider-neutral `TtsOpenOptions` has no fields for them.
 - **No reconnect on an unexpected close** — an abnormal WebSocket close surfaces as a `closed` event like any other; the caller must reconnect by opening a new session.
-- **e2e coverage against the real Deepgram endpoint is not included in this change** — unit tests use an injected `WebSocketFactory` double; a real-API smoke test is deferred to when this package has a model-facing consumer to exercise end to end.

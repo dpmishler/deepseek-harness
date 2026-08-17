@@ -1528,6 +1528,49 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
     ],
   },
   {
+    key: 'speech',
+    summary: 'The speech capability service (`ctx.speech`).',
+    description: 'The speech capability service (`ctx.speech`). Holds two independent provider-id registries — STT and TTS share no namespace — and dispatches `openStt()`/`openTts()` straight to the id named in the request.',
+    methods: [
+      {
+        signature: 'registerSttProvider(id: string, provider: SttProvider): () => void',
+        description: 'Register an STT provider under `id`. Throws SpeechError `SPEECH_DUPLICATE_PROVIDER` if `id` is already registered for STT.',
+        parameters: [{ name: 'id', description: 'stable id; callers pass this as {@link SttOpenOptions.provider}.' }, { name: 'provider', description: 'the provider adapter.' }],
+        returns: 'disposer that removes the registration immediately when called; also disposed with the calling fiber.',
+      },
+      {
+        signature: 'registerTtsProvider(id: string, provider: TtsProvider): () => void',
+        description: 'Register a TTS provider under `id`. Throws SpeechError `SPEECH_DUPLICATE_PROVIDER` if `id` is already registered for TTS.',
+        parameters: [{ name: 'id', description: 'stable id; callers pass this as {@link TtsOpenOptions.provider}.' }, { name: 'provider', description: 'the provider adapter.' }],
+        returns: 'disposer that removes the registration immediately when called; also disposed with the calling fiber.',
+      },
+      {
+        signature: 'listSttProviders(): string[]',
+        description: 'List registered STT provider ids in registration order.',
+        parameters: [],
+        returns: 'snapshot of registered STT provider ids.',
+      },
+      {
+        signature: 'listTtsProviders(): string[]',
+        description: 'List registered TTS provider ids in registration order.',
+        parameters: [],
+        returns: 'snapshot of registered TTS provider ids.',
+      },
+      {
+        signature: 'async openStt(options: SttOpenOptions): Promise<SttSession>',
+        description: 'Open an STT session on the provider named by `options.provider`.',
+        parameters: [{ name: 'options', description: 'session parameters; `options.provider` selects the registered adapter.' }],
+        returns: 'the open session once the transport confirms readiness.',
+      },
+      {
+        signature: 'async openTts(options: TtsOpenOptions): Promise<TtsSession>',
+        description: 'Open a TTS session on the provider named by `options.provider`.',
+        parameters: [{ name: 'options', description: 'session parameters; `options.provider` selects the registered adapter.' }],
+        returns: 'the open session once the transport confirms readiness.',
+      },
+    ],
+  },
+  {
     key: 'spillStore',
     summary: 'Abstract spill storage service.',
     description: 'Abstract spill storage service. Subclass, implement saveText, and load the subclass as a plugin — it registers as `ctx.spillStore` (one implementation per context; loading a second throws, cordis\' standard duplicate-service behavior).\n\nSemantics every implementation must honor:\n\n- saveText persists the FULL `content` verbatim and returns an opaque locator, exact byte length, and model-facing retrieval guidance.\n- Storage is scoped by the request\'s SaveTextSpill.owner session; the backend chooses a private (not world-readable) location and a collision-free name derived from — never equal to — the caller\'s `suggestedName`.\n- `saveText` REJECTS on a real storage failure (permissions, ENOSPC, backend unavailable); the caller decides how to degrade (the spill policy treats a rejection as best-effort and keeps the inline result).',
@@ -2718,6 +2761,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'AttachmentId',
     declaration: 'export type AttachmentId = Branded<\'AttachmentId\'>;',
+  },
+  {
+    name: 'AudioFormat',
+    declaration: 'export interface AudioFormat {\n    readonly encoding: \'linear16\' | \'mulaw\' | \'alaw\';\n    readonly sampleRateHz: number;\n}',
   },
   {
     name: 'BackendRegistry',
@@ -4072,6 +4119,14 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export interface SkillViewOptions extends SkillLookupOptions {\n    readonly scope?: ScopeKey | undefined;\n}',
   },
   {
+    name: 'SpeechRequestId',
+    declaration: 'export type SpeechRequestId = Branded<\'SpeechRequestId\'>;',
+  },
+  {
+    name: 'SpeechTurnId',
+    declaration: 'export type SpeechTurnId = Branded<\'SpeechTurnId\'>;',
+  },
+  {
     name: 'SpillLocator',
     declaration: 'export type SpillLocator = Branded<\'SpillLocator\'>;',
   },
@@ -4102,6 +4157,54 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'StreamChunk',
     declaration: 'export type StreamChunk = {\n    type: \'block-start\';\n    index: number;\n    blockType: ContentBlockType;\n} | {\n    type: \'text-delta\';\n    index: number;\n    text: string;\n} | {\n    type: \'reasoning-delta\';\n    index: number;\n    text: string;\n} | {\n    type: \'tool-call-delta\';\n    index: number;\n    id: CallId;\n    name?: string;\n    argumentsDelta: string;\n} | {\n    type: \'block-end\';\n    index: number;\n    block: ContentBlock;\n} | {\n    type: \'usage\';\n    usage: TokenUsage;\n} | {\n    type: \'finish\';\n    reason: FinishReason;\n    replayState?: ReplayEnvelope;\n};',
+  },
+  {
+    name: 'SttClosedEvent',
+    declaration: 'export interface SttClosedEvent {\n    readonly type: \'closed\';\n    readonly code?: number;\n    readonly reason?: string;\n}',
+  },
+  {
+    name: 'SttConfigureAckEvent',
+    declaration: 'export interface SttConfigureAckEvent {\n    readonly type: \'configure-ack\';\n    readonly ok: boolean;\n    readonly failureCode?: string;\n    readonly failureMessage?: string;\n}',
+  },
+  {
+    name: 'SttConfigureRequest',
+    declaration: 'export interface SttConfigureRequest {\n    readonly keyterms?: readonly string[];\n    readonly languageHints?: readonly string[] | null;\n    readonly endOfTurnConfidence?: number;\n    readonly eagerEndOfTurnConfidence?: number;\n    readonly endOfTurnTimeoutMs?: number;\n}',
+  },
+  {
+    name: 'SttConnectedEvent',
+    declaration: 'export interface SttConnectedEvent {\n    readonly type: \'connected\';\n    readonly requestId: SpeechRequestId;\n}',
+  },
+  {
+    name: 'SttErrorEvent',
+    declaration: 'export interface SttErrorEvent {\n    readonly type: \'error\';\n    readonly code: string;\n    readonly message: string;\n    readonly fatal: boolean;\n}',
+  },
+  {
+    name: 'SttEvent',
+    declaration: 'export type SttEvent = SttConnectedEvent | SttTurnEvent | SttConfigureAckEvent | SttErrorEvent | SttClosedEvent;',
+  },
+  {
+    name: 'SttOpenOptions',
+    declaration: 'export interface SttOpenOptions {\n    readonly provider: string;\n    readonly model?: string;\n    readonly audio?: AudioFormat;\n    readonly keyterms?: readonly string[];\n    readonly languageHints?: readonly string[];\n    readonly endOfTurn?: {\n        readonly confidence?: number;\n        readonly eagerConfidence?: number;\n        readonly timeoutMs?: number;\n    };\n    readonly tags?: readonly string[];\n    readonly signal?: AbortSignal;\n}',
+  },
+  {
+    name: 'SttProvider',
+    declaration: 'export interface SttProvider {\n    connect(options: SttOpenOptions): Promise<SttSession>;\n}',
+  },
+  {
+    name: 'SttSession',
+    declaration: 'export interface SttSession {\n    readonly events: AsyncIterable<SttEvent>;\n    sendAudio(chunk: Uint8Array): void;\n    configure(request: SttConfigureRequest): void;\n    close(): Promise<void>;\n}',
+  },
+  {
+    name: 'SttTurnEvent',
+    declaration: 'export interface SttTurnEvent {\n    readonly type: \'turn\';\n    readonly kind: SttTurnEventKind;\n    readonly turnIndex: number;\n    readonly transcript: string;\n    readonly words: readonly SttWord[];\n    readonly endOfTurnConfidence: number;\n    readonly audioWindowStartSec: number;\n    readonly audioWindowEndSec: number;\n    readonly languages?: readonly string[];\n}',
+  },
+  {
+    name: 'SttTurnEventKind',
+    declaration: 'export type SttTurnEventKind = \'progress\' | \'started\' | \'eager-completed\' | \'resumed\' | \'completed\';',
+  },
+  {
+    name: 'SttWord',
+    declaration: 'export interface SttWord {\n    readonly text: string;\n    readonly confidence: number;\n    readonly startSec: number;\n    readonly endSec: number;\n}',
   },
   {
     name: 'SubagentCapabilities',
@@ -4458,6 +4561,74 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'ToolSchema',
     declaration: 'export interface ToolSchema {\n    name: string;\n    description: string;\n    parameters: Record<string, unknown>;\n}',
+  },
+  {
+    name: 'TtsAudioEvent',
+    declaration: 'export interface TtsAudioEvent {\n    readonly type: \'audio\';\n    readonly turnId: SpeechTurnId;\n    readonly data: Uint8Array;\n}',
+  },
+  {
+    name: 'TtsClosedEvent',
+    declaration: 'export interface TtsClosedEvent {\n    readonly type: \'closed\';\n    readonly code?: number;\n    readonly reason?: string;\n}',
+  },
+  {
+    name: 'TtsConfigureAckEvent',
+    declaration: 'export interface TtsConfigureAckEvent {\n    readonly type: \'configure-ack\';\n    readonly ok: boolean;\n    readonly appliedSpeed?: number;\n    readonly failureCode?: string;\n    readonly failureField?: string;\n    readonly failureValue?: unknown;\n    readonly failureMessage?: string;\n}',
+  },
+  {
+    name: 'TtsConfigureRequest',
+    declaration: 'export interface TtsConfigureRequest {\n    readonly speed?: number;\n}',
+  },
+  {
+    name: 'TtsConnectedEvent',
+    declaration: 'export interface TtsConnectedEvent {\n    readonly type: \'connected\';\n    readonly requestId: SpeechRequestId;\n    readonly modelName: string;\n}',
+  },
+  {
+    name: 'TtsErrorEvent',
+    declaration: 'export interface TtsErrorEvent {\n    readonly type: \'error\';\n    readonly code: string;\n    readonly message: string;\n}',
+  },
+  {
+    name: 'TtsEvent',
+    declaration: 'export type TtsEvent = TtsConnectedEvent | TtsAudioEvent | TtsTurnStartedEvent | TtsTurnCompletedEvent | TtsTurnFlushedEvent | TtsTurnInterruptedEvent | TtsSessionCompletedEvent | TtsConfigureAckEvent | TtsWarningEvent | TtsErrorEvent | TtsClosedEvent;',
+  },
+  {
+    name: 'TtsOpenOptions',
+    declaration: 'export interface TtsOpenOptions {\n    readonly provider: string;\n    readonly voice?: string;\n    readonly audio?: AudioFormat;\n    readonly speed?: number;\n    readonly expressivity?: number;\n    readonly tags?: readonly string[];\n    readonly signal?: AbortSignal;\n}',
+  },
+  {
+    name: 'TtsProvider',
+    declaration: 'export interface TtsProvider {\n    connect(options: TtsOpenOptions): Promise<TtsSession>;\n}',
+  },
+  {
+    name: 'TtsSession',
+    declaration: 'export interface TtsSession {\n    readonly events: AsyncIterable<TtsEvent>;\n    speak(text: string): void;\n    flush(): void;\n    interrupt(playbackOffsetMs?: number): void;\n    configure(request: TtsConfigureRequest): void;\n    close(): Promise<void>;\n}',
+  },
+  {
+    name: 'TtsSessionCompletedEvent',
+    declaration: 'export interface TtsSessionCompletedEvent {\n    readonly type: \'session-completed\';\n    readonly totalAudioDurationMs: number;\n    readonly totalInputCharacterCount: number;\n    readonly totalBillableCharacterCount: number;\n}',
+  },
+  {
+    name: 'TtsTurnCompletedEvent',
+    declaration: 'export interface TtsTurnCompletedEvent extends TtsTurnMetrics {\n    readonly type: \'turn-completed\';\n}',
+  },
+  {
+    name: 'TtsTurnFlushedEvent',
+    declaration: 'export interface TtsTurnFlushedEvent {\n    readonly type: \'turn-flushed\';\n    readonly turnId: SpeechTurnId;\n}',
+  },
+  {
+    name: 'TtsTurnInterruptedEvent',
+    declaration: 'export interface TtsTurnInterruptedEvent {\n    readonly type: \'turn-interrupted\';\n    readonly audioPlayedMs: number;\n    readonly textSpoken?: string;\n    readonly textRemaining?: string;\n    readonly metrics: TtsTurnMetrics;\n}',
+  },
+  {
+    name: 'TtsTurnMetrics',
+    declaration: 'export interface TtsTurnMetrics {\n    readonly turnId: SpeechTurnId;\n    readonly audioDurationMs: number;\n    readonly inputCharacterCount: number;\n    readonly billableCharacterCount: number;\n}',
+  },
+  {
+    name: 'TtsTurnStartedEvent',
+    declaration: 'export interface TtsTurnStartedEvent {\n    readonly type: \'turn-started\';\n    readonly turnId: SpeechTurnId;\n}',
+  },
+  {
+    name: 'TtsWarningEvent',
+    declaration: 'export interface TtsWarningEvent {\n    readonly type: \'warning\';\n    readonly code: string;\n    readonly message: string;\n}',
   },
   {
     name: 'TurnEndCancelCause',
