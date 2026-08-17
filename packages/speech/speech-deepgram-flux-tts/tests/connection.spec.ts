@@ -6,7 +6,7 @@ import type { TtsEvent } from '@deepseek-ai/dsh-speech'
 /** A fully scripted `WebSocketLike` double: the test drives every event by hand. */
 class FakeSocket implements WebSocketLike {
   sent: (string | Uint8Array)[] = []
-  closedWith: { code?: number; reason?: string } | undefined
+  closedWith: { code: number | undefined; reason: string | undefined } | undefined
   private openListener: (() => void) | undefined
   private messageListener: ((event: { data: unknown }) => void) | undefined
   private closeListener: ((event: { code: number; reason: string }) => void) | undefined
@@ -20,11 +20,15 @@ class FakeSocket implements WebSocketLike {
     this.closedWith = { code, reason }
   }
 
+  addEventListener(event: 'open', listener: () => void): void
+  addEventListener(event: 'message', listener: (event: { data: unknown }) => void): void
+  addEventListener(event: 'close', listener: (event: { code: number; reason: string }) => void): void
+  addEventListener(event: 'error', listener: (event: { message?: string }) => void): void
   addEventListener(event: 'open' | 'message' | 'close' | 'error', listener: (...args: never[]) => void): void {
     if (event === 'open') this.openListener = listener
-    if (event === 'message') this.messageListener = listener
-    if (event === 'close') this.closeListener = listener
-    if (event === 'error') this.errorListener = listener
+    if (event === 'message') this.messageListener = listener as (event: { data: unknown }) => void
+    if (event === 'close') this.closeListener = listener as (event: { code: number; reason: string }) => void
+    if (event === 'error') this.errorListener = listener as (event: { message?: string }) => void
   }
 
   fireOpen(): void {
@@ -40,7 +44,7 @@ class FakeSocket implements WebSocketLike {
   }
 
   fireError(message?: string): void {
-    this.errorListener?.({ message })
+    this.errorListener?.(message === undefined ? {} : { message })
   }
 }
 
