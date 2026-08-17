@@ -81,7 +81,7 @@ export function apply(ctx: Context, config: Config, createWebSocket?: WebSocketF
     keepAliveIntervalMs: config.keepAliveIntervalMs ?? 8_000,
     profanityFilter: config.profanityFilter ?? false,
     numerals: config.numerals ?? false,
-    createWebSocket,
+    ...(createWebSocket !== undefined ? { createWebSocket } : {}),
   }
   ctx.voice.registerSttProvider(FLUX_STT_PROVIDER_ID, new FluxSttProvider(opts))
 }

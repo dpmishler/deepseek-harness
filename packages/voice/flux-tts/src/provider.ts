@@ -162,7 +162,7 @@ class FluxTtsSession implements TtsSession {
   private onClose(code: number, reason: string): void {
     clearInterval(this.keepAliveTimer)
     this.closed = true
-    this.queue.push({ type: 'closed', code, reason })
+    this.queue.push({ type: 'closed', code, ...(reason.length > 0 ? { reason } : {}) })
     this.queue.end()
     this.ready?.reject(new VoiceError(`transport closed before Connected (code ${code})`, 'WS_CLOSE_BEFORE_READY'))
     this.ready = undefined

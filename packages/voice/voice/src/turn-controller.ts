@@ -190,6 +190,7 @@ export class TurnController {
           case 'turn-flushed':
           case 'session-completed':
           case 'configure-ack':
+          case 'closed':
             break
           default:
             assertNever(event, 'TurnController.pumpTts')

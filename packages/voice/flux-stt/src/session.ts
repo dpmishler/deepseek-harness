@@ -181,7 +181,7 @@ export class FluxSttSession implements SttSession {
       }
     }
     this.closed = true
-    this.push({ type: 'closed', code, reason: reason || undefined })
+    this.push({ type: 'closed', ...(code !== undefined ? { code } : {}), ...(reason.length > 0 ? { reason } : {}) })
     this.wakeConsumer()
   }
 

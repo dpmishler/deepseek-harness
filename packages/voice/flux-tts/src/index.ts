@@ -15,7 +15,7 @@ import type { CredentialRef } from '@deepseek-ai/dsh-credentials'
 import { VoiceError } from '@deepseek-ai/dsh-voice'
 import { FLUX_TTS_PROVIDER_ID, FluxTtsProvider } from './provider.ts'
 import type { FluxTtsProviderConfig } from './provider.ts'
-import type { FluxTtsEncoding } from './types.ts'
+import type { FluxTtsEncoding, FluxTtsExpressivity, FluxTtsSpeed } from './types.ts'
 
 export { FLUX_TTS_PROVIDER_ID, FluxTtsProvider } from './provider.ts'
 export type { FluxTtsProviderConfig } from './provider.ts'
@@ -49,9 +49,9 @@ export interface Config {
   /** Output sample rate in Hz; omit for the model's native rate. */
   sampleRateHz?: number
   /** Speech-rate multiplier, `0.85`–`1.15` in `0.05` steps. */
-  speed?: number
+  speed?: FluxTtsSpeed
   /** Delivery register, calm (`-2`) to animated (`2`); fixed per connection. */
-  expressivity?: number
+  expressivity?: FluxTtsExpressivity
   /** WebSocket-protocol ping interval while no `Speak`/`Flush`/`Interrupt`/`Configure` has been sent. */
   keepAliveIntervalMs?: number
   /** Usage-reporting label for requests from this deployment. */
