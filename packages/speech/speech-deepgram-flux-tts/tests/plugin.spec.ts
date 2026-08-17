@@ -33,22 +33,22 @@ describe('resolveProviderOptions', () => {
     expect(resolveProviderOptions({ apiKey: 'k' })).toEqual({
       apiKey: 'k',
       baseURL: 'wss://api.deepgram.com',
-      model: 'flux-general-en',
+      model: 'flux-alexis-en',
     })
   })
 
   it('honors explicit baseURL and model overrides', () => {
-    const config: Config = { apiKey: 'k', baseURL: 'wss://custom.example', model: 'flux-general-multi' }
+    const config: Config = { apiKey: 'k', baseURL: 'wss://custom.example', model: 'flux-luna-en' }
     expect(resolveProviderOptions(config)).toEqual(config)
   })
 })
 
 describe('apply()', () => {
-  it('registers a Deepgram Flux STT provider under PROVIDER_ID', async () => {
+  it('registers a Deepgram Flux TTS provider under PROVIDER_ID', async () => {
     const ctx = new Context()
     await ctx.plugin(SpeechRuntime)
     apply(ctx, { apiKey: 'k' })
-    expect(ctx.speech.listSttProviders()).toEqual([PROVIDER_ID])
+    expect(ctx.speech.listTtsProviders()).toEqual([PROVIDER_ID])
   })
 
   it('throws at load when no API key is configured or in the environment', async () => {

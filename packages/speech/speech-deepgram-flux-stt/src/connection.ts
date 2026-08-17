@@ -230,7 +230,6 @@ export class FluxSttConnection {
   async close(): Promise<void> {
     if (!this.closed) {
       this.sendControl({ type: 'CloseStream' })
-      this.ws?.close(1000)
     }
     return this.closedSettled
   }

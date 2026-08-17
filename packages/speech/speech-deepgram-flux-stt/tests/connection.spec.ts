@@ -21,10 +21,10 @@ class FakeSocket implements WebSocketLike {
   }
 
   addEventListener(event: 'open' | 'message' | 'close' | 'error', listener: (...args: never[]) => void): void {
-    if (event === 'open') this.openListener = listener as () => void
-    if (event === 'message') this.messageListener = listener as (event: { data: unknown }) => void
-    if (event === 'close') this.closeListener = listener as (event: { code: number; reason: string }) => void
-    if (event === 'error') this.errorListener = listener as (event: { message?: string }) => void
+    if (event === 'open') this.openListener = listener
+    if (event === 'message') this.messageListener = listener
+    if (event === 'close') this.closeListener = listener
+    if (event === 'error') this.errorListener = listener
   }
 
   fireOpen(): void {
@@ -345,13 +345,13 @@ describe('FluxSttConnection sendAudio/configure/close', () => {
     expect(JSON.parse(socket.sent[0] as string)).toEqual({ type: 'Configure', keyterms: ['x'] })
   })
 
-  it('sends CloseStream and closes the socket with code 1000', async () => {
+  it('sends CloseStream and waits for the server to close the transport', async () => {
     const { connection, socket } = makeConnection()
     void connection.connect()
     socket.fireOpen()
     const closing = connection.close()
     expect(JSON.parse(socket.sent[0] as string)).toEqual({ type: 'CloseStream' })
-    expect(socket.closedWith).toEqual({ code: 1000, reason: undefined })
+    expect(socket.closedWith).toBeUndefined()
     socket.fireClose(1000, 'normal')
     await expect(closing).resolves.toBeUndefined()
   })
