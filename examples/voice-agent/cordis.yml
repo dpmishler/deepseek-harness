@@ -1,0 +1,37 @@
+# Voice-agent demo: Deepgram Flux STT/TTS over the speech capability seam,
+# with barge-in-aware turn orchestration driven by `@deepseek-ai/dsh-speech-agent`
+# from the test/driver script (a library, not a mounted plugin — TurnController
+# takes already-open sessions and has no ctx key of its own).
+#
+# The two Deepgram provider rows are disabled without $DEEPGRAM_API_KEY: both
+# plugins fail loud at load on a missing key (no `available()` escape valve),
+# so a keyless boot (CI, contributors without a Deepgram account) must not
+# mount them at all. `tests/keyless-smoke.e2e.ts` registers fake STT/TTS
+# providers directly on `ctx.speech` in that case, exercising every other
+# layer — the real seam, the real turn controller, the real LLM adapter, the
+# real session log — for real.
+- id: settings
+  name: '@deepseek-ai/dsh-settings-file'
+
+- id: credentials
+  name: '@deepseek-ai/dsh-credentials-local'
+
+- id: llm-deepseek
+  name: '@deepseek-ai/dsh-llm-deepseek'
+  config:
+    thinking: disabled
+    reasoningEffort: off
+
+- id: session
+  name: '@deepseek-ai/dsh-session'
+
+- id: speech
+  name: '@deepseek-ai/dsh-speech'
+
+- id: speech-deepgram-flux-stt
+  name: '@deepseek-ai/dsh-speech-deepgram-flux-stt'
+  disabled: !!js (process.env.DEEPGRAM_API_KEY ?? '').length === 0
+
+- id: speech-deepgram-flux-tts
+  name: '@deepseek-ai/dsh-speech-deepgram-flux-tts'
+  disabled: !!js (process.env.DEEPGRAM_API_KEY ?? '').length === 0

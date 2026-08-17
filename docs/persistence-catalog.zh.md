@@ -665,6 +665,63 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 
 来源：[`packages/session/session-title-llm/src/index.ts:43`](../packages/session/session-title-llm/src/index.ts)
 
+### `speech-agent/*`
+
+<a id="speech-agentresponse--log-only"></a>
+
+#### `speech-agent/response` — log-only
+
+```ts persistence-catalog
+/** The complete generated text for one response generation — see {@link SpeechAgentResponseMeta}. */
+'speech-agent/response': SpeechAgentResponseMeta
+```
+
+来源：[`packages/speech/speech-agent/src/consumer.ts:79`](../packages/speech/speech-agent/src/consumer.ts)
+
+<a id="speech-agentsession-completed--log-only"></a>
+
+#### `speech-agent/session-completed` — log-only
+
+```ts persistence-catalog
+/** Cumulative TTS session totals, recorded once before the transport closes. */
+'speech-agent/session-completed': SpeechAgentSessionCompletedMeta
+```
+
+来源：[`packages/speech/speech-agent/src/consumer.ts:85`](../packages/speech/speech-agent/src/consumer.ts)
+
+<a id="speech-agenttranscript--log-only"></a>
+
+#### `speech-agent/transcript` — log-only
+
+```ts persistence-catalog
+/** A user turn's final transcript, recorded immediately before it becomes model input. */
+'speech-agent/transcript': SpeechAgentTranscriptMeta
+```
+
+来源：[`packages/speech/speech-agent/src/consumer.ts:77`](../packages/speech/speech-agent/src/consumer.ts)
+
+<a id="speech-agentturn-completed--log-only"></a>
+
+#### `speech-agent/turn-completed` — log-only
+
+```ts persistence-catalog
+/** A TTS turn's billing and timing after it completed naturally (no barge-in). */
+'speech-agent/turn-completed': SpeechAgentTurnCompletedMeta
+```
+
+来源：[`packages/speech/speech-agent/src/consumer.ts:81`](../packages/speech/speech-agent/src/consumer.ts)
+
+<a id="speech-agentturn-interrupted--log-only"></a>
+
+#### `speech-agent/turn-interrupted` — log-only
+
+```ts persistence-catalog
+/** Barge-in reconciliation for one cancelled TTS turn. */
+'speech-agent/turn-interrupted': SpeechAgentTurnInterruptedMeta
+```
+
+来源：[`packages/speech/speech-agent/src/consumer.ts:83`](../packages/speech/speech-agent/src/consumer.ts)
+
 ### `step/*`
 
 <a id="stepend--log-only"></a>

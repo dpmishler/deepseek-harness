@@ -608,6 +608,18 @@ importers:
       '@deepseek-ai/dsh-skill-filesystem':
         specifier: workspace:*
         version: link:../packages/skill/skill-filesystem
+      '@deepseek-ai/dsh-speech':
+        specifier: workspace:*
+        version: link:../packages/speech/speech
+      '@deepseek-ai/dsh-speech-agent':
+        specifier: workspace:*
+        version: link:../packages/speech/speech-agent
+      '@deepseek-ai/dsh-speech-deepgram-flux-stt':
+        specifier: workspace:*
+        version: link:../packages/speech/speech-deepgram-flux-stt
+      '@deepseek-ai/dsh-speech-deepgram-flux-tts':
+        specifier: workspace:*
+        version: link:../packages/speech/speech-deepgram-flux-tts
       '@deepseek-ai/dsh-spill-local':
         specifier: workspace:*
         version: link:../packages/spill/spill-local
@@ -6830,6 +6842,77 @@ importers:
       '@deepseek-ai/dsh-tools':
         specifier: workspace:^
         version: link:../../core/tools
+
+  packages/speech/speech:
+    devDependencies:
+      '@deepseek-ai/cordis':
+        specifier: workspace:^
+        version: link:../../../vendor/cordis
+      '@deepseek-ai/dsh-brand':
+        specifier: workspace:^
+        version: link:../../util/brand
+      '@deepseek-ai/dsh-invariants':
+        specifier: workspace:^
+        version: link:../../runtime-diagnostics/invariants
+      '@deepseek-ai/dsh-llm':
+        specifier: workspace:^
+        version: link:../../llm/llm
+
+  packages/speech/speech-agent:
+    devDependencies:
+      '@deepseek-ai/cordis':
+        specifier: workspace:^
+        version: link:../../../vendor/cordis
+      '@deepseek-ai/dsh-invariants':
+        specifier: workspace:^
+        version: link:../../runtime-diagnostics/invariants
+      '@deepseek-ai/dsh-llm':
+        specifier: workspace:^
+        version: link:../../llm/llm
+      '@deepseek-ai/dsh-session':
+        specifier: workspace:^
+        version: link:../../core/session
+      '@deepseek-ai/dsh-speech':
+        specifier: workspace:^
+        version: link:../speech
+
+  packages/speech/speech-deepgram-flux-stt:
+    dependencies:
+      '@deepseek-ai/schemastery':
+        specifier: link:../../../vendor/schemastery
+        version: link:../../../vendor/schemastery
+      undici:
+        specifier: ^7.25.0
+        version: 7.28.0
+    devDependencies:
+      '@deepseek-ai/cordis':
+        specifier: workspace:^
+        version: link:../../../vendor/cordis
+      '@deepseek-ai/dsh-invariants':
+        specifier: workspace:^
+        version: link:../../runtime-diagnostics/invariants
+      '@deepseek-ai/dsh-speech':
+        specifier: workspace:^
+        version: link:../speech
+
+  packages/speech/speech-deepgram-flux-tts:
+    dependencies:
+      '@deepseek-ai/schemastery':
+        specifier: link:../../../vendor/schemastery
+        version: link:../../../vendor/schemastery
+      undici:
+        specifier: ^7.25.0
+        version: 7.28.0
+    devDependencies:
+      '@deepseek-ai/cordis':
+        specifier: workspace:^
+        version: link:../../../vendor/cordis
+      '@deepseek-ai/dsh-invariants':
+        specifier: workspace:^
+        version: link:../../runtime-diagnostics/invariants
+      '@deepseek-ai/dsh-speech':
+        specifier: workspace:^
+        version: link:../speech
 
   packages/spill/spill:
     devDependencies:

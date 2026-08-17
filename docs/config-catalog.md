@@ -1899,6 +1899,54 @@ export interface Config {
 
 Source: [`packages/skill/skill-filesystem/src/index.ts:49`](../packages/skill/skill-filesystem/src/index.ts)
 
+<a id="deepseek-aidsh-speech-deepgram-flux-stt"></a>
+
+## `@deepseek-ai/dsh-speech-deepgram-flux-stt`
+
+Requires: `speech`
+
+```ts config-catalog
+/**
+ * Plugin config. `apiKey` falls back to `$DEEPGRAM_API_KEY`; a missing key
+ * fails loud at load (this provider has no `available()` escape valve —
+ * `ctx.speech` dispatches to a registered provider unconditionally).
+ */
+export interface Config {
+  /** Deepgram API key. Falls back to `$DEEPGRAM_API_KEY`. */
+  apiKey?: string
+  /** Endpoint base (default: `wss://api.deepgram.com`). */
+  baseURL?: string
+  /** Default Flux STT model (default: `flux-general-en`). */
+  model?: string
+}
+```
+
+Source: [`packages/speech/speech-deepgram-flux-stt/src/index.ts:42`](../packages/speech/speech-deepgram-flux-stt/src/index.ts)
+
+<a id="deepseek-aidsh-speech-deepgram-flux-tts"></a>
+
+## `@deepseek-ai/dsh-speech-deepgram-flux-tts`
+
+Requires: `speech`
+
+```ts config-catalog
+/**
+ * Plugin config. `apiKey` falls back to `$DEEPGRAM_API_KEY`; a missing key
+ * fails loud at load (this provider has no `available()` escape valve —
+ * `ctx.speech` dispatches to a registered provider unconditionally).
+ */
+export interface Config {
+  /** Deepgram API key. Falls back to `$DEEPGRAM_API_KEY`. */
+  apiKey?: string
+  /** Endpoint base (default: `wss://api.deepgram.com`). */
+  baseURL?: string
+  /** Default Flux TTS model, format `flux-{voice}-{lang}` (default: `flux-alexis-en`). */
+  model?: string
+}
+```
+
+Source: [`packages/speech/speech-deepgram-flux-tts/src/index.ts:42`](../packages/speech/speech-deepgram-flux-tts/src/index.ts)
+
 <a id="deepseek-aidsh-spill-local"></a>
 
 ## `@deepseek-ai/dsh-spill-local`
@@ -3080,6 +3128,7 @@ These load from a `cordis.yml` entry with no `config:` block; they declare no co
 - `@deepseek-ai/dsh-session-projection` ([`packages/session/session-projection/src/index.ts`](../packages/session/session-projection/src/index.ts))
 - `@deepseek-ai/dsh-session-stats` — requires `sessionProjections` ([`packages/session/session-stats/src/index.ts`](../packages/session/session-stats/src/index.ts))
 - `@deepseek-ai/dsh-skill-badge` — requires `skills` ([`packages/skill/skill-badge/src/index.ts`](../packages/skill/skill-badge/src/index.ts))
+- `@deepseek-ai/dsh-speech` ([`packages/speech/speech/src/index.ts`](../packages/speech/speech/src/index.ts))
 - `@deepseek-ai/dsh-storage` ([`packages/storage/storage/src/index.ts`](../packages/storage/storage/src/index.ts))
 - `@deepseek-ai/dsh-subagent` ([`packages/subagent/subagent/src/index.ts`](../packages/subagent/subagent/src/index.ts))
 - `@deepseek-ai/dsh-subprocess-local` ([`packages/subprocess/subprocess-local/src/index.ts`](../packages/subprocess/subprocess-local/src/index.ts))
@@ -3144,6 +3193,7 @@ Imported as libraries by other packages; a `cordis.yml` cannot load them.
 - `@deepseek-ai/dsh-sdk-protocol` ([`packages/sdk/protocol/src/index.ts`](../packages/sdk/protocol/src/index.ts))
 - `@deepseek-ai/dsh-session-telemetry` ([`packages/session/session-telemetry/src/index.ts`](../packages/session/session-telemetry/src/index.ts))
 - `@deepseek-ai/dsh-session-title-llm` ([`packages/session/session-title-llm/src/index.ts`](../packages/session/session-title-llm/src/index.ts))
+- `@deepseek-ai/dsh-speech-agent` ([`packages/speech/speech-agent/src/index.ts`](../packages/speech/speech-agent/src/index.ts))
 - `@deepseek-ai/dsh-subagent-in-process-driver` ([`packages/subagent/subagent-in-process-driver/src/index.ts`](../packages/subagent/subagent-in-process-driver/src/index.ts))
 - `@deepseek-ai/dsh-timeout` ([`packages/util/timeout/src/index.ts`](../packages/util/timeout/src/index.ts))
 - `@deepseek-ai/dsh-typert-generator` ([`packages/typert/generator/src/index.ts`](../packages/typert/generator/src/index.ts))
