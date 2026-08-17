@@ -1,0 +1,7 @@
+{
+  "name": "voice-agent-example",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "description": "Runnable demo: Deepgram Flux STT/TTS voice conversation with barge-in over the speech capability seam"
+}

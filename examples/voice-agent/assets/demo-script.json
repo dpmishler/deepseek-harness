@@ -1,0 +1,21 @@
+{
+  "description": "Canonical two-turn conversation script for manually exercising the voice-agent demo, including one barge-in. Read aloud (or piped as recorded audio) to a real /v2/listen session while examples/voice-agent's cordis.yml composition is running.",
+  "turns": [
+    {
+      "speaker": "user",
+      "say": "Hi there, can you give me a two sentence summary of what a barge-in is in a voice agent?",
+      "expect": "The agent starts speaking a short definition."
+    },
+    {
+      "speaker": "user",
+      "say": "Actually, never mind — what's the weather like on Mars?",
+      "timing": "Interrupt the agent mid-sentence, partway through its first answer.",
+      "expect": "TurnController.bargeIn() fires: playback halts immediately, the in-flight LLM call aborts, TtsSession.interrupt() reports the session-wide playback offset, and speech-agent/turn-interrupted logs the exact textSpoken/textRemaining split."
+    },
+    {
+      "speaker": "user",
+      "say": "Thanks, that's all I needed.",
+      "expect": "The agent answers the Mars-weather question in full this time (no further barge-in) and speech-agent/turn-completed logs its billing and timing."
+    }
+  ]
+}
