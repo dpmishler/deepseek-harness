@@ -179,7 +179,7 @@ describe('FluxTtsConnection connect()', () => {
     const opened = connection.connect()
     socket.fireOpen()
     await expect(opened).resolves.toBeUndefined()
-    expect(() => controller.abort()).not.toThrow()
+    expect(() => { controller.abort() }).not.toThrow()
     expect(socket.closedWith).toBeUndefined()
   })
 })

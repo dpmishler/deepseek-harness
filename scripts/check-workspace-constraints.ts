@@ -145,6 +145,9 @@ const packageFileExtras: Readonly<Record<string, readonly string[]>> = {
   '@deepseek-ai/dsh-sandbox-windows-acl': ['lib/runner.js', 'lib/types-*.js'],
   '@deepseek-ai/dsh-skill-badge': ['assets'],
   '@deepseek-ai/dsh-subprocess-local': ['scripts/ensure-spawn-helper.mjs'],
+  // The session-log-logging helper ships as its own bundle: importing it
+  // pulls in dsh-session, which a bare TurnController consumer never needs.
+  '@deepseek-ai/dsh-speech-agent': ['lib/consumer.js'],
 }
 
 function sameStringList(actual: readonly string[] | undefined, expected: readonly string[]): boolean {
